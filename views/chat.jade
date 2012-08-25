@@ -1,0 +1,138 @@
+extends layout
+
+block content
+	script(type='text/javascript')
+		$(document).ready(function() {	
+			
+			// TODO:
+			// Show #ask-alias as modal 'lightbox'-ish window.
+			// Make pressing enter in #ask-alias #alias call setAlias
+			
+			var socket = io.connect('http://localhost:3000');
+			
+			
+			/** Define utility functions.
+				* =========================
+				*/
+			function setAlert(selector, str, severity) {
+				var el = $(selector);
+				if (el) {
+					// Start by clearing the selector of any contents.
+					el.empty();
+					
+					// Now append a new item.
+					el.append('<div class="'+severity+'">'+str+'</div>');
+				}
+			}
+			
+			function setAlias(alias) {
+				
+				// Set the alias.
+				socket.emit('set-alias', alias, function(response) {
+					
+					// Receive the confirmation.
+					if (response.result === 'success') {
+						
+						// Display the current alias in the interface.
+						$('#chat #alias').html('<em>'+response.alias+'</em>');
+
+						// Hide ask-alias and unhide the chat interface.
+						$('#ask-alias').addClass('hidden');
+						$('#chat').removeClass('hidden');
+						
+					} else {
+						setAlert('#ask-alias #alerts', response.message, 'error');
+					}
+				});
+			}
+			
+			/** Configure event handlers and program flow.
+				* ==========================================
+				*/
+			// ASK-ALIAS: Wire up validation and handle click events.
+			var v = OhNoValidation();
+			v.addValidation('#ask-alias #alias', 'presence', { alias: 'Alias' });
+			
+			// Connect ask-alias submit button to form submit.
+			$('#ask-alias #submit').click(function() {
+				// Validate the alias field.
+				v.validate(function(result) {
+					// If result is true, set alias via WebSocket.
+					if (result) {
+						setAlias($('#ask-alias #alias').val());
+					}
+				});
+			});
+			
+			// TODO
+			/*$('#ask-alias #alias').keyPress(function() {
+					alert('Key pressed!');
+			});*/
+			
+			// CHATTER: Wire up validation and handle click events.
+			var w = new OhNoValidation();
+			w.addValidation('#chatter #chat-text', 'presence', { alias: 'Message' });		// TODO: Not working at the moment.
+			
+			$('#chatter #submit').click(function() {
+				// Send message depending on parsing of string.
+				// If direct message syntax detected, send direct message.
+				alert('Sending message \''+$('#chat #chat-text').val()+'\'');
+				
+				// Validate the chat input.
+				w.validate(function(result) {
+					
+					// If result is true, send message via WebSocket.
+					if (result) {
+						
+						// TODO: Disable #chat-text
+						socket.emit('send-message', $('#chat #chat-text').val(), function(response) {
+							
+							if (response.result === 'success') {
+								// TODO: Re-enable #chat-text
+								alert('Send-message confirmed!');
+							}
+						});
+					}
+				});
+			});
+			
+			// Hook up event to receive messages.
+			socket.on('message', function(msg) {
+				alert('Received message!');
+				$('#dialogue').prepend('<div class="message">'+msg+'</div>');
+			});
+			
+		});
+	
+	style(type='text/css')
+		.hidden {
+			display: none;
+		}
+		#alerts {
+			font-style: italic;
+		}
+		.error {
+			color: red;
+		}
+		.warning {
+			color: yellow;
+		}
+		
+	h1= title
+	div#ask-alias
+		h2 What's your alias?
+		p Enter an alias <em>or</em> your email address to continue.
+			div.form
+				input#alias(type='text')
+				div#submit.btn.btn-primary Start Chatting!
+			div#alerts
+				
+	div#chat
+		h2 You are chatting as 
+			span#alias
+			.
+		p Start typing to chat.
+			div#chatter
+				textarea#chat-text(style='width:400px; height: 17px;')
+				div#submit.btn.btn-primary Send
+				div#dialogue

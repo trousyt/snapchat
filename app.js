@@ -1,14 +1,15 @@
+// Bootstrap all custom prototype augments.
+require('./lib/prototype');
 
 /**
  * Module dependencies.
  */
-
 var express = require('express')
   , routes = require('./routes')
   , http = require('http');
 
 var app = express();
-
+	
 app.configure(function(){
   app.set('port', process.env.PORT || 3000);
   app.set('views', __dirname + '/views');
@@ -18,6 +19,7 @@ app.configure(function(){
   app.use(express.bodyParser());
   app.use(express.methodOverride());
   app.use(app.router);
+	//app.use(express.compiler({ src: __dirname + '/public', enable: ['less'] }))
   app.use(express.static(__dirname + '/public'));
 });
 
@@ -26,7 +28,21 @@ app.configure('development', function(){
 });
 
 app.get('/', routes.index);
+app.get('/chat', routes.chat);
+app.get('/sandbox', routes.sandbox);
 
-http.createServer(app).listen(app.get('port'), function(){
-  console.log("Express server listening on port " + app.get('port'));
+var server = http.createServer(app),
+		io = require('socket.io').listen(server),
+		sockets = require('./lib/sockets');
+
+server.listen(app.get('port'), function() {
+	console.log("Express server listening on port " + app.get('port'));
+
+	// Bind socket-io events to any new connections
+	sockets.bind(io);
+
 });
+
+/**
+ * Custom initialization.
+ */

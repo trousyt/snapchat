@@ -1,0 +1,50 @@
+extends layout
+
+block content
+	script(type='text/javascript')
+		var DEBUG = true;
+		$(document).ready(function() {
+			var val = new OhNoValidation();
+			val.setOption('afterValidated', function(validated) { 
+				alert('validation finished with '+validated); 
+				for (var a in val.alerts) {
+					console.log(val.alerts[a].message);
+				}
+			});
+			
+			val.addValidation('#test-input', 'presence', { alias: 'Test', severity: 'warning', message: '{alias} can not be nothing!', alertContainer: '#test-input-alert' });
+			val.addValidation('#test-input2', 'presence', { alias: 'Test2' })
+			val.bindForm('#test-form');
+			
+			/* jQuery-style syntax */
+			/*$('#test-form').submit(function() {
+				$('#test-input').addValidation('presence', {alias: 'Test', severity: 'warning'})
+				.addValidation('#test-input2', 'presence', {alias: 'Test2'})
+				.validate();
+				
+				return false;
+			});*/
+			
+		});
+	
+	style(type='text/css')
+		.error {
+			background-color: pink;
+		}
+		
+		.warning {
+			background-color: yellow;
+		}
+    
+	h1= title
+	h2 Welcome to the sandbox.
+	div#alerts This is where alerts go.
+	p
+	div(style='width:800px;')
+		form#test-form
+			label Test1 
+				input#test-input(type='text')
+				div#test-input-alert(style="width:200px; float: right;")
+			label Test2 
+				input#test-input2(type='text')
+			input#test-submit(type='submit',value='Test') Test
