@@ -33,7 +33,7 @@ app.get('/sandbox', routes.sandbox);
 
 var server = http.createServer(app),
 		io = require('socket.io').listen(server),
-		sockets = require('./lib/sockets');
+		sockets = require('./modules/socket-init');
 
 server.listen(app.get('port'), function() {
 	console.log("Express server listening on port " + app.get('port'));

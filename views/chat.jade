@@ -7,9 +7,19 @@ block content
 			// TODO:
 			// Show #ask-alias as modal 'lightbox'-ish window.
 			// Make pressing enter in #ask-alias #alias call setAlias
+			// Clear the input box after chat message sent
+			// Hide the alert div when no alerts are fired
 			
 			var socket = io.connect('http://localhost:3000');
-			
+			socket.on('connect', function() {
+				
+				// Hook up event to receive messages.
+				socket.on('recv-message', function(data) {
+					console.log('Received message!');
+					$('#dialogue').prepend('<div class="message"><span class="alias">'+data.alias+'</span>: '+data.msg+'</div>');
+				});
+				
+			});
 			
 			/** Define utility functions.
 				* =========================
@@ -50,7 +60,7 @@ block content
 				* ==========================================
 				*/
 			// ASK-ALIAS: Wire up validation and handle click events.
-			var v = OhNoValidation();
+			var v = OhNoValidation({ wrapper: '#ask-alias-alerts' });
 			v.addValidation('#ask-alias #alias', 'presence', { alias: 'Alias' });
 			
 			// Connect ask-alias submit button to form submit.
@@ -70,13 +80,13 @@ block content
 			});*/
 			
 			// CHATTER: Wire up validation and handle click events.
-			var w = new OhNoValidation();
+			var w = new OhNoValidation({ wrapper: '#chat-alerts' });
 			w.addValidation('#chatter #chat-text', 'presence', { alias: 'Message' });		// TODO: Not working at the moment.
 			
 			$('#chatter #submit').click(function() {
 				// Send message depending on parsing of string.
 				// If direct message syntax detected, send direct message.
-				alert('Sending message \''+$('#chat #chat-text').val()+'\'');
+				//alert('Sending message \''+$('#chat #chat-text').val()+'\'');
 				
 				// Validate the chat input.
 				w.validate(function(result) {
@@ -84,22 +94,20 @@ block content
 					// If result is true, send message via WebSocket.
 					if (result) {
 						
-						// TODO: Disable #chat-text
-						socket.emit('send-message', $('#chat #chat-text').val(), function(response) {
+						var chatText = $('#chatter #chat-text');
+						chatText.attr('disabled', true);
+						
+						// Send the message.
+						socket.emit('send-message', chatText.val(), function(response) {
 							
+							// Handle the response.
 							if (response.result === 'success') {
-								// TODO: Re-enable #chat-text
-								alert('Send-message confirmed!');
+								chatText.attr('disabled', false);
+								//alert('Send-message confirmed!');
 							}
 						});
 					}
 				});
-			});
-			
-			// Hook up event to receive messages.
-			socket.on('message', function(msg) {
-				alert('Received message!');
-				$('#dialogue').prepend('<div class="message">'+msg+'</div>');
 			});
 			
 		});
@@ -118,21 +126,45 @@ block content
 			color: yellow;
 		}
 		
+		.form {
+			
+		}
+		.form input, textarea {
+			margin-right: 10px;	/* To separate button divs from input fields */
+		}
+		.form input {
+			margin-top: 9px;
+		}
+		div#dialogue {
+			margin-top: 30px;
+		}
+		
+		.message {
+			background-color: gray;
+			padding: 20px;
+		}
+		.message .alias {
+			font-size: 2em;
+		}
+		
 	h1= title
 	div#ask-alias
 		h2 What's your alias?
 		p Enter an alias <em>or</em> your email address to continue.
-			div.form
-				input#alias(type='text')
-				div#submit.btn.btn-primary Start Chatting!
-			div#alerts
+		div.form
+			input#alias(type='text')
+			div#submit.btn.btn-primary Start Chatting!
+			div#ask-alias-alerts
 				
 	div#chat
 		h2 You are chatting as 
 			span#alias
 			.
 		p Start typing to chat.
+		div.form
 			div#chatter
-				textarea#chat-text(style='width:400px; height: 17px;')
+				textarea#chat-text(style='width:400px; height: 34px;')
 				div#submit.btn.btn-primary Send
+				div#chat-alerts
 				div#dialogue
+				

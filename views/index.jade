@@ -1,26 +1,8 @@
 extends layout
 
-block content
-  script(type='text/javascript')
-    // Bind to the submit button event.
-    $(document).ready(function() {
-      $('#submit').click(function() {
-      
-        // Validate.
-        var alias = $('#alias').val().trim();
-        if (alias == '') {
-          alert('is empty');
-        }
-      
-        $('form').submit();
-      });
-    });
-  
-  h1= title
-  h2 Welcome to #{title}.
-  p Enter an alias <em>or</em> your email address to continue.
-    form(action='/chat', method='post')
-      input#alias(type='text', name='alias')
-      div#submit.btn.btn-primary Start Chatting!
-      
-      
+block content  
+	h1= title
+	h2 This page will be a landing page.
+		#start
+			a(href='/chat')
+				#submit.btn.btn-primary Start Chatting!
