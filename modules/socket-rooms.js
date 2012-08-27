@@ -4,11 +4,13 @@
 	* of the socket an easier task. It also handles the logic of joining rooms.
 	* This function is immediately executed and returns an object.
 	*/
+// TODO:
+// Latch onto all communication going through the room and handle chat logs.
 this.instance = (function() {
-	var that = {}, rooms = [];
+	var rooms = [];
 	
 	// Define room defaults.
-	that.defaults = {
+	this.defaults = {
 			roomName: 'The Snack Shack'
 	};
 		
@@ -17,7 +19,7 @@ this.instance = (function() {
 		* socket: The current socket of the user.
 		* returns: The current socket's room name, or empty string ('') if not found.
 		*/
-	that.get = function(socket) {
+	this.current = function(socket) {
 		for (var i in rooms) {
 			if (rooms[i].socket === socket) {
 				return rooms[i].room;
@@ -31,9 +33,9 @@ this.instance = (function() {
 		* socket: The current socket of the user.
 		* room: The new room name to join.
 		*/
-	that.join = function(socket, room) {
+	this.join = function(socket, room) {
 		// Leave previous room, if in one.
-		var curRoom = this.get(socket);
+		var curRoom = this.current(socket);
 		if (curRoom) {
 			socket.leave(curRoom);
 			// TODO: Broadcast message that user left the room.
@@ -47,5 +49,5 @@ this.instance = (function() {
 		rooms.push({ socket: socket, room: room });
 	}
 	
-	return that;
+	return this;
 }());
