@@ -9,6 +9,7 @@ block content
 			// Make pressing enter in #ask-alias #alias call setAlias
 			// Clear the input box after chat message sent
 			// Hide the alert div when no alerts are fired
+			// Clean up the log when it gets so long
 			
 			var socket = io.connect('http://localhost:3000');
 			socket.on('connect', function() {
@@ -16,7 +17,7 @@ block content
 				// Hook up event to receive messages.
 				socket.on('recv-message', function(data) {
 					console.log('Received message!');
-					$('#dialogue').prepend('<div class="message"><span class="alias">'+data.alias+'</span>: '+data.msg+'</div>');
+					$('#dialogue').prepend('<div class="message"><span class="alias">'+data.alias+'</span> '+data.msg+'</div>').fadeIn('slow');
 				});
 				
 			});
@@ -138,9 +139,17 @@ block content
 		div#dialogue {
 			margin-top: 30px;
 		}
-		
+
+
+		.new {
+			opacity: 0;
+		}
 		.message {
-			background-color: gray;
+			background-image: -webkit-linear-gradient(top, #fff, #f5f5f5);
+			background-image: -moz-linear-gradient(top, #fff, #f5f5f5);
+			background-image: -ms-linear-gradient(top, #fff, #f5f5f5);
+			background-image: -o-linear-gradient(top, #fff, #f5f5f5);
+			border-bottom: 1px solid #fefefe;
 			padding: 20px;
 		}
 		.message .alias {
