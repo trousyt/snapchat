@@ -61,6 +61,7 @@
 		    io.sockets.on('connection', function (socket) {
 
 		        // Do anything on connection by default?
+		        // TODO: Log that a new client connection was made?
 		        logEvent('connection', 'Connection made, binding socket events...');
 
 		        // Declare custom functionality functions that are
@@ -69,6 +70,10 @@
 
 		        // Handle built-in events.
 		        // ***********************
+		        // Event: disconnect
+		        // Handle every disconnect event sent to this socket.
+		        // Caveat: Doesn't always fire and can't make use of 
+		        //	socket.get() method without problems.
 		        socket.on('disconnect', function () {
 		            logEvent('disconnect', 'User disconnected');
 		            socket.get('alias', function(alias) {
@@ -76,6 +81,8 @@
 		            });
 		        });
 
+		        // Event: message
+		        // Handle each and every message send to this socket.
 		        socket.on('message', function (data) {
 		            logEvent('message', 'handling message: data');
 		        });
@@ -86,12 +93,15 @@
 		        //	1) Receive an event.
 		        //	2) Confirm receipt of that event with naming convention of recvd-{event}.
 		        // *********************
+		        // TODO: Custom event handlers defined here might be unecessary. Might move
+		        // to a model where these are delegated to ActionDispatch and will all run
+		        // through the 'message' object above. How hard this will make it to 'respond'
+		        // to events with the callback method (using fn) is unknown at this point.
 
 		        // Event: set-alias
 		        // Sets the alias for the current socket.
 		        socket.on('set-alias', function (alias, fn) {
 		            // TODO: Make sure no one else is using the same alias before setting it.
-		            //console.log(io.sockets);
 
 		            socket.set('alias', alias, function () {
 		                logEvent('set-alias', 'Set alias to \'' + alias + '\'');
